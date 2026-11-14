@@ -1,0 +1,29 @@
+{% extends 'app/base.html' %}
+
+{% block title %}All Projects{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 style="margin:0;">Projects</h1>
+        <a href="{% url 'project_create' %}" class="btn">+ New Project</a>
+    </div>
+</div>
+
+{% for project in projects %}
+<div class="card">
+    <h2><a href="{% url 'project_detail' project.pk %}">{{ project.name }}</a></h2>
+    {% if project.description %}
+    <p class="muted">{{ project.description }}</p>
+    {% endif %}
+    <p class="muted">
+        {{ project.tasks.count }} task{{ project.tasks.count|pluralize }} ·
+        Created {{ project.created_at|date:"M d, Y" }}
+    </p>
+</div>
+{% empty %}
+<div class="card">
+    <p class="empty">No projects yet. Create your first one!</p>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p class="muted"><a href="{% url 'project_list' %}">← All projects</a></p>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h1 style="margin:0;">{{ project.name }}</h1>
+        <a href="{% url 'task_create' project.pk %}" class="btn">+ Add Task</a>
+    </div>
+    {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+</div>
+
+<!-- Search & filter -->
+<div class="card">
+    <form method="get" class="filter-bar">
+        <div class="field" style="flex:2;">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search task title or description...">
+        </div>
+        <div class="field">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="flex:0 0 auto;">
+            <button type="submit" class="btn">Apply</button>
+        </div>
+        <div class="field" style="flex:0 0 auto;">
+            <a href="{% url 'project_detail' project.pk %}" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Task list -->
+<div class="card">
+    <h2>Tasks ({{ tasks.count }})</h2>
+
+    {% for task in tasks %}
+    <div class="task-row">
+        <div class="task-main">
+            <div class="task-title">{{ task.title }}</div>
+            {% if task.description %}<div class="muted">{{ task.description }}</div>{% endif %}
+        </div>
+
+        <span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span>
+
+        <!-- Update status -->
+        <form method="post" action="{% url 'task_update_status' task.pk %}" class="inline-form">
+            {% csrf_token %}
+            <select name="status" class="inline-select" onchange="this.form.submit()">
+                {% for value, label in task.Status.choices %}
+                <option value="{{ value }}" {% if value == task.status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <noscript><button type="submit" class="btn btn-sm">Save</button></noscript>
+        </form>
+
+        <!-- Delete -->
+        <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-danger">Delete</a>
+    </div>
+    {% empty %}
+    <p class="empty">No tasks match. {% if query or selected_status %}Try clearing the filters.{% else %}Add a task to
+        get started.{% endif %}</p>
+    {% endfor %}
+</div>
+{% endblock %}
